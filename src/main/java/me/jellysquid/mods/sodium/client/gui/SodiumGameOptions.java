@@ -20,6 +20,7 @@ public class SodiumGameOptions {
 
     public final QualitySettings quality = new QualitySettings();
     public final AdvancedSettings advanced = new AdvancedSettings();
+    public final CustomizationSettings customization = new CustomizationSettings();
     public final PerformanceSettings performance = new PerformanceSettings();
     public final NotificationSettings notifications = new NotificationSettings();
 
@@ -55,6 +56,10 @@ public class SodiumGameOptions {
         public boolean useAdvancedStagingBuffers = true;
 
         public int cpuRenderAheadLimit = 3;
+    }
+
+    public static class CustomizationSettings {
+        public ColorTheme colorTheme = ColorTheme.STANDARD;
     }
 
     public static class QualitySettings {
@@ -102,6 +107,36 @@ public class SodiumGameOptions {
 
         public boolean isFancy(GraphicsMode graphicsMode) {
             return (this == FANCY) || (this == DEFAULT && (graphicsMode == GraphicsMode.FANCY || graphicsMode == GraphicsMode.FABULOUS));
+        }
+    }
+
+    public enum ColorTheme implements TextProvider {
+        STANDARD("sodium.options.color_theme.standard", 0x90000000, 0xE0000000, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        LIGHT("sodium.options.color_theme.light", 0x90FFFFFF, 0xE0FFFFFF, 0xFFb9b9b9, 0x60000000, 0x90FFFFFF),
+        PURPLE("sodium.options.color_theme.purple", 0x90680e97, 0xE09426c5, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        MAGENTA("sodium.options.color_theme.magenta", 0x90680e97, 0xE09426c5, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        RED("sodium.options.color_theme.red", 0x90970e1d, 0xE0c52638, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        GREEN("sodium.options.color_theme.green", 0x900e9713, 0xE02cc526, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        LIGHT_BLUE("sodium.options.color_theme.light_blue", 0x900e7797, 0xE0269ac5, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        BLUE("sodium.options.color_theme.blue", 0x900e3197, 0xE02637c5, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        RAINBOW("sodium.options.color_theme.rainbow", 0x90000000, 0xE0000000, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF),
+        VANILLA("sodium.options.color_theme.vanilla", 0x90000000, 0xE0000000, 0xFFFFFFFF, 0x60000000, 0x90FFFFFF);
+
+        private final Text name;
+        public final int enabledColor, enabledHoverColor, enabledTextColor, disabledColor, disabledTextColor;
+
+        ColorTheme(String name, int enabledColor, int enabledHoverColor, int enabledTextColor, int disabledColor, int disabledTextColor) {
+            this.name = Text.translatable(name);
+            this.enabledColor = enabledColor;
+            this.enabledHoverColor = enabledHoverColor;
+            this.enabledTextColor = enabledTextColor;
+            this.disabledColor = disabledColor;
+            this.disabledTextColor = disabledTextColor;
+        }
+
+        @Override
+        public Text getLocalizedName() {
+            return this.name;
         }
     }
 

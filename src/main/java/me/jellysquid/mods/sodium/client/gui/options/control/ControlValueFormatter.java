@@ -1,10 +1,21 @@
 package me.jellysquid.mods.sodium.client.gui.options.control;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
 public interface ControlValueFormatter {
     static ControlValueFormatter guiScale() {
         return (v) -> (v == 0) ? Text.translatable("options.guiScale.auto").getString() : v + "x";
+    }
+
+    static ControlValueFormatter resolution() {
+        return (v) -> {
+            if (MinecraftClient.getInstance().getWindow().getMonitor() == null) {
+                return Text.translatable("options.fullscreen.unavailable").getString();
+            } else {
+                return v == 0 ? Text.translatable("options.fullscreen.current").getString() : Text.literal(MinecraftClient.getInstance().getWindow().getMonitor().getVideoMode(v - 1).toString()).getString();
+            }
+        };
     }
 
     static ControlValueFormatter fpsLimit() {
@@ -35,6 +46,10 @@ public interface ControlValueFormatter {
 
     static ControlValueFormatter percentage() {
         return (v) -> v + "%";
+    }
+
+    static ControlValueFormatter percentageOff(){
+        return (v) -> (v > 0) ? v + "%" : Text.translatable("options.off").getString();
     }
 
     static ControlValueFormatter multiplier() {

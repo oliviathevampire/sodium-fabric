@@ -1,5 +1,7 @@
 package me.jellysquid.mods.sodium.client.gui.options.control;
 
+import me.jellysquid.mods.sodium.client.SodiumClientMod;
+import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import me.jellysquid.mods.sodium.client.gui.options.Option;
 import me.jellysquid.mods.sodium.client.gui.widgets.AbstractWidget;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
@@ -43,8 +45,9 @@ public class ControlElement<T> extends AbstractWidget {
 
         this.hovered = this.dim.containsCursor(mouseX, mouseY);
 
-        this.drawRect(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), this.hovered ? 0xE0000000 : 0x90000000);
-        this.drawString(matrixStack, label, this.dim.x() + 6, this.dim.getCenterY() - 4, 0xFFFFFFFF);
+        SodiumGameOptions.ColorTheme colorTheme = SodiumClientMod.options().customization.colorTheme;
+        this.drawRect(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), this.hovered ? colorTheme.enabledHoverColor : colorTheme.enabledColor);
+        this.drawString(matrixStack, label, this.dim.x() + 6, this.dim.getCenterY() - 4, colorTheme.enabledTextColor);
     }
 
     public Option<T> getOption() {

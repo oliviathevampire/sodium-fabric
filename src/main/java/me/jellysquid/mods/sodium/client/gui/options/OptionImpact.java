@@ -7,7 +7,8 @@ public enum OptionImpact implements TextProvider {
     LOW(Formatting.GREEN, "sodium.option_impact.low"),
     MEDIUM(Formatting.YELLOW, "sodium.option_impact.medium"),
     HIGH(Formatting.GOLD, "sodium.option_impact.high"),
-    VARIES(Formatting.WHITE, "sodium.option_impact.varies");
+    VARIES(Formatting.WHITE, "sodium.option_impact.varies"),
+    NONE(Formatting.WHITE, "sodium.option_impact.none");
 
     private final Text text;
 

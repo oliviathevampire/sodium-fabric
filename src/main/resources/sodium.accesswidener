@@ -16,3 +16,8 @@ accessible method net/minecraft/client/texture/SpriteContents upload (IIII[Lnet/
 accessible method net/minecraft/client/render/BackgroundRenderer getFogModifier (Lnet/minecraft/entity/Entity;F)Lnet/minecraft/client/render/BackgroundRenderer$StatusEffectFogModifier;
 
 accessible field net/minecraft/client/texture/NativeImage pointer J
+
+accessible field net/minecraft/state/State owner Ljava/lang/Object;
+
+accessible field net/minecraft/client/option/GameOptions distortionEffectScale Lnet/minecraft/client/option/SimpleOption;
+accessible field net/minecraft/client/option/GameOptions fovEffectScale Lnet/minecraft/client/option/SimpleOption;

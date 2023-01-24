@@ -1,5 +1,7 @@
 package me.jellysquid.mods.sodium.client.gui.widgets;
 
+import me.jellysquid.mods.sodium.client.SodiumClientMod;
+import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.util.math.MatrixStack;
@@ -28,8 +30,9 @@ public class FlatButtonWidget extends AbstractWidget implements Drawable {
 
         boolean hovered = this.dim.containsCursor(mouseX, mouseY);
 
-        int backgroundColor = this.enabled ? (hovered ? 0xE0000000 : 0x90000000) : 0x60000000;
-        int textColor = this.enabled ? 0xFFFFFFFF : 0x90FFFFFF;
+        SodiumGameOptions.ColorTheme colorTheme = SodiumClientMod.options().customization.colorTheme;
+        int backgroundColor = this.enabled ? (hovered ? colorTheme.enabledHoverColor : colorTheme.enabledColor) : colorTheme.disabledColor;
+        int textColor = this.enabled ? colorTheme.enabledTextColor : colorTheme.disabledTextColor;
 
         int strWidth = this.font.getWidth(this.label);
 

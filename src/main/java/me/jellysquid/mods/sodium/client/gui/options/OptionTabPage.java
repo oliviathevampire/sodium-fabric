@@ -3,13 +3,12 @@ package me.jellysquid.mods.sodium.client.gui.options;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.text.Text;
 
-public class OptionPage {
-    private final Text name;
+public class OptionTabPage extends OptionTab {
     private final ImmutableList<OptionGroup> groups;
     private final ImmutableList<Option<?>> options;
 
-    public OptionPage(Text name, ImmutableList<OptionGroup> groups) {
-        this.name = name;
+    public OptionTabPage(Text name, ImmutableList<OptionGroup> groups) {
+        super(name);
         this.groups = groups;
 
         ImmutableList.Builder<Option<?>> builder = ImmutableList.builder();
@@ -27,10 +26,6 @@ public class OptionPage {
 
     public ImmutableList<Option<?>> getOptions() {
         return this.options;
-    }
-
-    public Text getName() {
-        return this.name;
     }
 
 }

@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class SodiumOptionsGUI extends Screen {
-    private final List<OptionPage> pages = new ArrayList<>();
+    private final List<OptionTab> tabs = new ArrayList<>();
 
     private final List<ControlElement<?>> controls = new ArrayList<>();
 
     private final Screen prevScreen;
 
-    private OptionPage currentPage;
+    private OptionTabPage currentTab;
 
     private FlatButtonWidget applyButton, closeButton, undoButton;
     private FlatButtonWidget donateButton, hideDonateButton;
@@ -45,16 +45,20 @@ public class SodiumOptionsGUI extends Screen {
 
         this.prevScreen = prevScreen;
 
-        this.pages.add(SodiumGameOptionPages.general());
-        this.pages.add(SodiumGameOptionPages.quality());
-        this.pages.add(SodiumGameOptionPages.performance());
-        this.pages.add(SodiumGameOptionPages.advanced());
+        this.tabs.add(SodiumGameOptionTabs.general());
+        this.tabs.add(SodiumGameOptionTabs.quality());
+        this.tabs.add(SodiumGameOptionTabs.advanced());
+        this.tabs.add(SodiumGameOptionTabs.customization());
+        this.tabs.add(SodiumGameOptionTabs.vanilla());
     }
 
-    public void setPage(OptionPage page) {
-        this.currentPage = page;
-
-        this.rebuildGUI();
+    public void activateTab(OptionTab tab) {
+        if(tab instanceof OptionTabButton){
+            ((OptionTabButton)tab).execute();
+        }else{
+            this.currentTab = (OptionTabPage)tab;
+            this.rebuildGUI();
+        }
     }
 
     @Override
@@ -69,21 +73,25 @@ public class SodiumOptionsGUI extends Screen {
 
         this.clearChildren();
 
-        if (this.currentPage == null) {
-            if (this.pages.isEmpty()) {
-                throw new IllegalStateException("No pages are available?!");
+        if (this.currentTab == null) {
+            if (this.tabs.isEmpty()) {
+                throw new IllegalStateException("No tab pages are available?!");
             }
 
             // Just use the first page for now
-            this.currentPage = this.pages.get(0);
+            for (OptionTab tab : this.tabs) {
+                if (tab instanceof OptionTabPage) {
+                    this.currentTab = (OptionTabPage)tab;
+                }
+            }
         }
 
-        this.rebuildGUIPages();
-        this.rebuildGUIOptions();
+        this.rebuildGUITabs();
+        int y = this.rebuildGUIOptions() + 4;
 
-        this.undoButton = new FlatButtonWidget(new Dim2i(this.width - 211, this.height - 30, 65, 20), Text.translatable("sodium.options.buttons.undo"), this::undoChanges);
-        this.applyButton = new FlatButtonWidget(new Dim2i(this.width - 142, this.height - 30, 65, 20), Text.translatable("sodium.options.buttons.apply"), this::applyChanges);
-        this.closeButton = new FlatButtonWidget(new Dim2i(this.width - 73, this.height - 30, 65, 20), Text.translatable("gui.done"), this::close);
+        this.closeButton = new FlatButtonWidget(new Dim2i(6, y, 64, 20), Text.translatable("gui.done"), this::close);
+        this.applyButton = new FlatButtonWidget(new Dim2i(74, y, 64, 20), Text.translatable("sodium.options.buttons.apply"), this::applyChanges);
+        this.undoButton = new FlatButtonWidget(new Dim2i(142, y, 64, 20), Text.translatable("sodium.options.buttons.undo"), this::undoChanges);
         this.donateButton = new FlatButtonWidget(new Dim2i(this.width - 128, 6, 100, 20), Text.translatable("sodium.options.buttons.donate"), this::openDonationPage);
         this.hideDonateButton = new FlatButtonWidget(new Dim2i(this.width - 26, 6, 20, 20), Text.literal("x"), this::hideDonationButton);
 
@@ -116,15 +124,15 @@ public class SodiumOptionsGUI extends Screen {
         this.setDonationButtonVisibility(false);
     }
 
-    private void rebuildGUIPages() {
+    private void rebuildGUITabs() {
         int x = 6;
         int y = 6;
 
-        for (OptionPage page : this.pages) {
+        for (OptionTab page : this.tabs) {
             int width = 12 + this.textRenderer.getWidth(page.getName());
 
-            FlatButtonWidget button = new FlatButtonWidget(new Dim2i(x, y, width, 18), page.getName(), () -> this.setPage(page));
-            button.setSelected(this.currentPage == page);
+            FlatButtonWidget button = new FlatButtonWidget(new Dim2i(x, y, width, 18), page.getName(), () -> this.activateTab(page));
+            button.setSelected(this.currentTab == page);
 
             x += width + 6;
 
@@ -132,15 +140,15 @@ public class SodiumOptionsGUI extends Screen {
         }
     }
 
-    private void rebuildGUIOptions() {
+    private int rebuildGUIOptions() {
         int x = 6;
         int y = 28;
 
-        for (OptionGroup group : this.currentPage.getGroups()) {
+        for (OptionGroup group : this.currentTab.getGroups()) {
             // Add each option's control element
             for (Option<?> option : group.getOptions()) {
                 Control<?> control = option.getControl();
-                ControlElement<?> element = control.createElement(new Dim2i(x, y, 200, 18));
+                ControlElement<?> element = control.createElement(new Dim2i(x, y, 350, 18));
 
                 this.addDrawableChild(element);
 
@@ -153,6 +161,7 @@ public class SodiumOptionsGUI extends Screen {
             // Add padding beneath each option group
             y += 4;
         }
+        return y;
     }
 
     @Override
@@ -177,10 +186,12 @@ public class SodiumOptionsGUI extends Screen {
         boolean hasChanges = this.getAllOptions()
                 .anyMatch(Option::hasChanged);
 
-        for (OptionPage page : this.pages) {
-            for (Option<?> option : page.getOptions()) {
-                if (option.hasChanged()) {
-                    hasChanges = true;
+        for (OptionTab page : this.tabs) {
+            if(page instanceof OptionTabPage){
+                for (Option<?> option : ((OptionTabPage)page).getOptions()) {
+                    if (option.hasChanged()) {
+                        hasChanges = true;
+                    }
                 }
             }
         }
@@ -194,8 +205,13 @@ public class SodiumOptionsGUI extends Screen {
     }
 
     private Stream<Option<?>> getAllOptions() {
-        return this.pages.stream()
-                .flatMap(s -> s.getOptions().stream());
+        return this.tabs.stream()
+                .flatMap(s -> {
+                    if(s instanceof OptionTabButton){
+                        return null;
+                    }
+                    return ((OptionTabPage)s).getOptions().stream();
+                });
     }
 
     private Stream<ControlElement<?>> getActiveControls() {
@@ -224,17 +240,18 @@ public class SodiumOptionsGUI extends Screen {
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;
         int boxYLimit = boxY + boxHeight;
-        int boxYCutoff = this.height - 40;
+        int boxYCutoff = Math.min(this.height - 40, 28 + ((OptionTabPage)this.tabs.get(1)).getOptions().size() * 18 + ((OptionTabPage)this.tabs.get(1)).getGroups().size() * 4 - 4);
 
         // If the box is going to be cutoff on the Y-axis, move it back up the difference
         if (boxYLimit > boxYCutoff) {
             boxY -= boxYLimit - boxYCutoff;
         }
 
-        this.fillGradient(matrixStack, boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE0000000, 0xE0000000);
+        SodiumGameOptions.ColorTheme colorTheme = SodiumClientMod.options().customization.colorTheme;
+        this.fillGradient(matrixStack, boxX, boxY, boxX + boxWidth, boxY + boxHeight, colorTheme.enabledHoverColor, colorTheme.enabledHoverColor);
 
         for (int i = 0; i < tooltip.size(); i++) {
-            this.textRenderer.draw(matrixStack, tooltip.get(i), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF);
+            this.textRenderer.draw(matrixStack, tooltip.get(i), boxX + textPadding, boxY + textPadding + (i * 12), colorTheme.enabledTextColor);
         }
     }
 
@@ -264,6 +281,10 @@ public class SodiumOptionsGUI extends Screen {
         if (flags.contains(OptionFlag.REQUIRES_ASSET_RELOAD)) {
             client.setMipmapLevels(client.options.getMipmapLevels().getValue());
             client.reloadResourcesConcurrently();
+        }
+
+        if (flags.contains(OptionFlag.REQUIRES_VIDEO_RELOAD)) {
+            client.getWindow().applyVideoMode();
         }
 
         for (OptionStorage<?> storage : dirtyStorages) {
